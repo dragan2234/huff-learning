@@ -1,0 +1,27 @@
+#define function subMod(uint256, uint256, uint256) nonpayable returns (uint256)
+
+
+#define macro SUB_MOD() = takes (0) returns (0) {
+    // a - b % n = a + (n-b) % n
+    0x44 calldataload     // [number3] // load third 32 bytes onto the stack - (n)
+
+    0x24 calldataload     // [number2] // load second 32 bytes onto the stack - (n)
+    0x44 calldataload     // [number3] // load third 32 bytes onto the stack - (b)
+    sub                   // [number3-number2]
+    0x04 calldataload     // [number1] // load first 32 bytes onto the stack - (a)
+    add                   // [number1 + (number3-number2)]
+    mod                   // [number1 + (number3-number2)] mod number3
+    0x00 mstore           // place [number1 + (number3-number2) % number3] in memory
+    0x20 0x00 return      // return first 32 bytes (result)
+}
+
+#define macro MAIN() = takes (0) returns (0) {
+    // Identify which function is being called.
+    0x00 calldataload 0xE0 shr
+    dup1 __FUNC_SIG(subMod) eq submod jumpi
+
+    0x00 0x00 revert
+
+    submod:
+        SET_VALUE()
+}
